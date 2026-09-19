@@ -1,0 +1,26 @@
+{
+ "label": "REAL LTA DataMall TrainServiceAlerts snapshot captured 2026-09-19 (no disruption on the covered lines; contains real line notices)",
+ "capturedAt": "2026-09-19T07:23:55Z",
+ "shape": "lta",
+ "response": {
+  "odata.metadata": "https://datamall2.mytransport.sg/ltaodataservice/$metadata#TrainServicesAlerts",
+  "value": {
+   "Status": 1,
+   "AffectedSegments": [],
+   "Message": [
+    {
+     "Content": "19/09/2026 10:00-Bus services 170 and 170X have been diverted from Woodlands Road to ply along Woodlands Ave 3 and Woodlands Centre Road in the Woodlands Direction, due to heavy traffic entering Woodlands Checkpoint.",
+     "CreatedDate": "2026-09-19 09:59:28"
+    },
+    {
+     "Content": "05:00-BP-Planned Service Adjustments. Bukit Panjang LRT will be closed on 20 Sep and 27 Sep 2026 (Sundays) to facilitate renewal works. Please use shuttle and regular bus services.",
+     "CreatedDate": "2026-09-18 20:06:30"
+    },
+    {
+     "Content": "05:00-SK-Planned Service Adjustment. From 19 Apr to 18 Oct 2026, the Sengkang West LRT Inner Loop (i.e. direction of STC Sengkang towards SW1 Cheng Lim) will be closed. Commuters can continue to use the Sengkang West LRT Outer Loop (i.e. direction of STC Sengkang towards SW8 Renjong), peak-hours shuttle bus services, or regular bus services.",
+     "CreatedDate": "2026-04-18 11:50:27"
+    }
+   ]
+  }
+ }
+}

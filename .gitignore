@@ -1,0 +1,13 @@
+# Secrets - never commit these; copy .env.example to .env and fill it in locally
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+*.log
+.DS_Store
+.vscode/
+__pycache__/
+*.pt
+*.mp4

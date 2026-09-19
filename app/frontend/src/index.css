@@ -1,0 +1,1383 @@
+/* ---------------------------------------------------------
+   Design language: "platform information display"
+   Grounded in the product's own concept — LED door indicators —
+   rather than a generic dark app theme. Signage-dark background,
+   geometric display type for headings, monospace for anything
+   that reads like live data (the way departure boards do), and
+   status colors that glow faintly like real LEDs.
+--------------------------------------------------------- */
+
+:root {
+  --bg: #0a0c10;
+  --bg-raised: #0f1218;
+  --surface: #12151c;
+  --surface-2: #1a1e27;
+  --border: #23283333;
+  --border-strong: #2a3040;
+  --text: #eef1f7;
+  --text-dim: #7c8496;
+  --text-faint: #4c5364;
+
+  --purple: #b355f0;
+  --purple-dim: #7a3fa8;
+  --purple-glow: rgba(179, 85, 240, 0.35);
+
+  --led-low: #33e08a;
+  --led-low-glow: rgba(51, 224, 138, 0.45);
+  --led-medium: #ffb020;
+  --led-medium-glow: rgba(255, 176, 32, 0.45);
+  --led-high: #ff4d5e;
+  --led-high-glow: rgba(255, 77, 94, 0.45);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  --font-display: "Sora", "Inter", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+:root[data-theme="light"] {
+  --bg: #f6f4fb;
+  --bg-raised: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0edf8;
+  --border: #ded7ec66;
+  --border-strong: #d9d0ea;
+  --text: #1c1826;
+  --text-dim: #5c5568;
+  --text-faint: #918aa0;
+
+  --purple: #9333d1;
+  --purple-dim: #c9a6e8;
+  --purple-glow: rgba(147, 51, 209, 0.2);
+
+  --led-low-glow: rgba(21, 163, 96, 0.35);
+  --led-medium-glow: rgba(217, 140, 15, 0.35);
+  --led-high-glow: rgba(224, 45, 62, 0.35);
+}
+
+:root[data-theme="light"] .app-shell::before {
+  opacity: 0.4; /* the scanline texture needs to be much subtler on a light bg */
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 25;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse 700px 300px at 50% -10%, var(--purple-glow) 0%, transparent 60%),
+    var(--bg);
+  position: relative;
+}
+
+/* faint scanline texture — signage housing, kept subtle */
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.012) 0px,
+    rgba(255, 255, 255, 0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 0;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.top-bar .line-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--purple);
+  box-shadow: 0 0 10px 2px var(--purple-glow);
+  flex-shrink: 0;
+}
+
+.top-bar h1 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.top-bar .back {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 19px;
+  cursor: pointer;
+  padding: 0 4px 0 0;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.top-bar .back:hover {
+  color: var(--text);
+}
+
+.content {
+  flex: 1;
+  padding: 22px 20px 44px;
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--purple);
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tile-grid.single-col {
+  grid-template-columns: 1fr;
+}
+
+.tile {
+  background: linear-gradient(160deg, var(--surface) 0%, var(--bg-raised) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tile:hover {
+  border-color: var(--purple-dim);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -12px rgba(179, 85, 240, 0.25);
+}
+
+.tile .tile-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.tile .tile-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.card {
+  background: linear-gradient(160deg, var(--surface) 0%, var(--bg-raised) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.card h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.alert-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.alert-row:last-child {
+  border-bottom: none;
+}
+
+.station-track {
+  position: relative;
+  padding-left: 26px;
+}
+
+.station-track::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(var(--purple), transparent);
+  opacity: 0.55;
+}
+
+.station-item {
+  position: relative;
+  padding: 13px 0;
+  cursor: pointer;
+}
+
+.station-item::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 19px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--purple);
+  transition: box-shadow 0.15s ease;
+}
+
+.station-item:hover::before {
+  box-shadow: 0 0 8px 1px var(--purple-glow);
+}
+
+.station-item .name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.station-item .code {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+}
+
+.empty-state {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 20px;
+  line-height: 1.6;
+}
+
+.loading {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   Train diagram — replaces the plain door grid. Reads as a
+   miniature version of the physical LED indicator strip the
+   concept is built around: a train silhouette with each door
+   lighting up in its live density color.
+--------------------------------------------------------- */
+
+.train-diagram {
+  margin-top: 4px;
+}
+
+.train-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.train-body {
+  fill: #e4e6eb;
+  stroke: #aeb3bd;
+  stroke-width: 1.5;
+}
+
+.train-window-band {
+  fill: #14161b;
+}
+
+.train-window-pane {
+  fill: #363a44;
+}
+
+.train-stripe {
+  fill: var(--purple);
+}
+
+.train-stripe-thin {
+  fill: #b9bec8;
+}
+
+.train-car-divider {
+  stroke: #b9bec8;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.train-door-panel {
+  fill: none;
+  stroke: #b9bec8;
+  stroke-width: 1.2;
+}
+
+.train-door-handle {
+  fill: #8a8f99;
+}
+
+.train-led-tick {
+  stroke: var(--text-faint);
+  stroke-width: 1;
+}
+
+.train-led-mount {
+  fill: #1a1e27;
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.train-led {
+  stroke: none;
+  transition: filter 0.2s ease;
+}
+
+.train-led.low {
+  fill: var(--led-low);
+  filter: drop-shadow(0 0 4px var(--led-low-glow)) drop-shadow(0 0 8px var(--led-low-glow));
+}
+
+.train-led.medium {
+  fill: var(--led-medium);
+  filter: drop-shadow(0 0 4px var(--led-medium-glow)) drop-shadow(0 0 8px var(--led-medium-glow));
+}
+
+.train-led.high {
+  fill: var(--led-high);
+  filter: drop-shadow(0 0 4px var(--led-high-glow)) drop-shadow(0 0 9px var(--led-high-glow));
+}
+
+.door-labels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.door-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.door-label .door-id {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.door-label .density-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.door-label.low .density-dot {
+  background: var(--led-low);
+  box-shadow: 0 0 6px 1px var(--led-low-glow);
+}
+.door-label.medium .density-dot {
+  background: var(--led-medium);
+  box-shadow: 0 0 6px 1px var(--led-medium-glow);
+}
+.door-label.high .density-dot {
+  background: var(--led-high);
+  box-shadow: 0 0 6px 1px var(--led-high-glow);
+}
+.seat-map {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.seat-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px 2px 4px 4px; /* rounded bottom, flat-ish top — reads as a little seat */
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+}
+
+.seat-icon.seat-free {
+  background: var(--led-low);
+  border-color: var(--led-low);
+  box-shadow: 0 0 4px 1px var(--led-low-glow);
+}
+.seat-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.seat-label {
+  font-size: 11px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.platform-line {
+  height: 3px;
+  margin-top: 16px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--text-faint) 0px,
+    var(--text-faint) 10px,
+    transparent 10px,
+    transparent 18px
+  );
+  opacity: 0.5;
+}
+
+.platform-caption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.density-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.density-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.density-legend .legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* ---------------------------------------------------------
+   Bottom navigation
+--------------------------------------------------------- */
+
+.screen-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+.bottom-nav {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 12px;
+  text-decoration: none;
+  color: var(--text-faint);
+  font-size: 10.5px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.bottom-nav-item svg {
+  color: inherit;
+}
+
+.bottom-nav-item.active {
+  color: var(--purple);
+}
+
+/* ---------------------------------------------------------
+   Search bar + favorites
+--------------------------------------------------------- */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 11px 16px;
+  color: var(--text-dim);
+}
+
+.search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: var(--font-body);
+}
+
+.search-bar input::placeholder {
+  color: var(--text-faint);
+}
+
+.favorite-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.favorite-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.favorite-chip:hover {
+  border-color: var(--purple-dim);
+}
+
+/* ---------------------------------------------------------
+   Disruption banner
+--------------------------------------------------------- */
+
+.disruption-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 176, 32, 0.08);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.disruption-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--led-medium);
+  box-shadow: 0 0 8px 2px var(--led-medium-glow);
+  flex-shrink: 0;
+}
+
+.disruption-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.disruption-sub {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------------
+   Status pill variants
+--------------------------------------------------------- */
+
+.status-pill.status-ok {
+  color: var(--led-low);
+  border-color: rgba(51, 224, 138, 0.35);
+  background: rgba(51, 224, 138, 0.08);
+}
+
+.status-pill.status-warn {
+  color: var(--led-medium);
+  border-color: rgba(255, 176, 32, 0.35);
+  background: rgba(255, 176, 32, 0.08);
+}
+
+.interchange-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+  border: 1px solid var(--purple-dim);
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: middle;
+}
+
+/* ---------------------------------------------------------
+   Home tile variants
+--------------------------------------------------------- */
+
+.tile-featured {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-color: var(--purple-dim);
+  background: linear-gradient(160deg, rgba(179, 85, 240, 0.1), var(--bg-raised));
+}
+
+.action-tile {
+  padding: 14px 12px;
+  cursor: pointer;
+}
+
+.action-tile.active {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 1px var(--purple) inset;
+}
+
+/* ---------------------------------------------------------
+   Facilities tab
+--------------------------------------------------------- */
+
+.facility-alert {
+  background: rgba(255, 77, 94, 0.08);
+  border: 1px solid rgba(255, 77, 94, 0.3);
+  color: var(--led-high);
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.facility-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.facility-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.facility-row:last-child {
+  border-bottom: none;
+}
+
+.facility-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.facility-status {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.facility-status.operational {
+  color: var(--led-low);
+  background: rgba(51, 224, 138, 0.1);
+}
+
+.facility-status.down {
+  color: var(--led-high);
+  background: rgba(255, 77, 94, 0.1);
+}
+
+/* ---------------------------------------------------------
+   Wayfinder tab
+--------------------------------------------------------- */
+
+.exit-select {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.exit-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.exit-chip.active {
+  border-color: var(--purple);
+  color: var(--text);
+  background: rgba(179, 85, 240, 0.1);
+}
+
+.wayfinder-result {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.wayfinder-door {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(51, 224, 138, 0.12);
+  border: 1px solid var(--led-low);
+  color: var(--led-low);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.wayfinder-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.wayfinder-sub {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ---------------------------------------------------------
+   Journey Planner
+--------------------------------------------------------- */
+
+.planner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.select-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.select-field select,
+.select-field input {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.select-field input:focus {
+  outline: none;
+  border-color: var(--purple-dim);
+}
+
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 4px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.address-suggestion-row {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.address-suggestion-row:last-child {
+  border-bottom: none;
+}
+
+.address-suggestion-row:hover {
+  background: var(--surface-2);
+}
+
+.address-suggestion-row .name {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.address-suggestion-row .code {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 52px 20px 1fr;
+  align-items: start;
+  column-gap: 10px;
+}
+
+.timeline-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+  padding-top: 1px;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--text);
+  background: var(--bg-raised);
+  justify-self: center;
+  margin-top: 3px;
+}
+
+.timeline-dot-destination {
+  width: 12px;
+  height: 12px;
+  border-width: 3px;
+  border-color: var(--purple);
+}
+
+.timeline-stop-name {
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+  padding: 2px 0 10px;
+}
+
+.timeline-connector-row {
+  min-height: 44px;
+}
+
+.timeline-line {
+  width: 0;
+  height: 100%;
+  min-height: 36px;
+  margin-top: 2px;
+  justify-self: center;
+  border-left: 3px dotted var(--text-faint);
+}
+
+.timeline-leg-detail {
+  padding-bottom: 14px;
+}
+
+.timeline-leg-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.timeline-line-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0a0c10;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.timeline-leg-caption {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.timeline-leg-agency {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.plan-button {
+  background: var(--purple);
+  color: #0a0c10;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: filter 0.15s ease;
+}
+
+.plan-button:disabled {
+  background: var(--surface-2);
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+
+.plan-button:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+.journey-summary {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.journey-stat {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.journey-stat-label {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.journey-stop .stop-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--led-low);
+  border: 1px solid var(--led-low);
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: middle;
+}
+
+.journey-stop .stop-tag-end {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+
+/* ---------------------------------------------------------
+   Disruption simulation (Journey Planner)
+--------------------------------------------------------- */
+
+/* A disruption banner shown inline in the journey results, as opposed to
+   the clickable one on Home - same look, but static (no pointer cursor,
+   no click-through). */
+.disruption-banner-block {
+  align-items: flex-start;
+}
+
+.disruption-banner-urgent {
+  background: rgba(255, 77, 94, 0.08);
+  border-color: rgba(255, 77, 94, 0.35);
+}
+
+.disruption-banner-urgent .disruption-dot {
+  background: var(--led-high);
+  box-shadow: 0 0 8px 2px var(--led-high-glow);
+}
+
+.disruption-banner-urgent .disruption-title {
+  color: var(--led-high);
+}
+
+/* Manual "use alternative exit" toggle on the Ideal Exit card - a real
+   passenger control, not a demo scenario, so it's styled plainly rather
+   than matching the sim-controls chips. */
+.exit-preference-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.exit-preference-toggle input[type="checkbox"] {
+  accent-color: var(--purple);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.exit-preference-note {
+  margin: 6px 0 0 23px; /* aligns under the toggle's label text, past the checkbox */
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+/* Bridging-bus leg in the journey timeline - reuses the normal timeline
+   row/icon treatment but with a dashed amber accent so it visibly reads as
+   a temporary substitute, not a normal scheduled bus. */
+.timeline-bridging-row .timeline-leg-detail {
+  border: 1px dashed rgba(255, 176, 32, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: rgba(255, 176, 32, 0.05);
+}
+
+/* Simulation controls - hackathon/demo-only, kept visually separate from
+   the passenger-facing cards above (muted, dashed border, smaller type)
+   so it doesn't read as part of the normal app UI. */
+.sim-controls {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-strong);
+}
+
+.sim-controls-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.sim-controls-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sim-reset-chip {
+  color: var(--led-high);
+  border-color: rgba(255, 77, 94, 0.35);
+}
+
+/* ---------------------------------------------------------
+   Coming soon (Bus)
+--------------------------------------------------------- */
+
+.coming-soon-card {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.content-with-sheet {
+  padding-bottom: 90px; /* keeps content clear of the peeking sheet */
+}
+
+.mrt-sheet {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 64px; /* sits directly above the bottom nav */
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mrt-sheet-handle-area {
+  flex-shrink: 0;
+  padding: 10px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.mrt-sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.mrt-sheet-peek-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--purple);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mrt-sheet-peek-arrow {
+  font-size: 10px;
+}
+
+.mrt-sheet-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 16px 14px;
+}
+
+.mrt-sheet-header {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.mrt-sheet-header h2 {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  margin: 0;
+}
+
+.mrt-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.mrt-sheet-search {
+  margin-bottom: 10px;
+}
+
+.mrt-sheet-search input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.mrt-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+}
+
+.mrt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.mrt-sheet-note {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  margin: 0 0 8px;
+}
+
+.mrt-sheet-footnote {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.mrt-sheet-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 16px 14px;
+  overflow: hidden;
+}
+/* ---------------------------------------------------------
+   MRT official-style system map
+--------------------------------------------------------- */
+
+.mrt-map-viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  position: relative;
+  touch-action: none; /* we handle pinch ourselves */
+}
+.mrt-system-map-svg {
+  display: block;
+  transition: width 0.1s ease, height 0.1s ease;
+}
+.mrt-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mrt-zoom-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.mrt-station-hotspot:hover
+  .mrt-hotspot-tooltip,
+.mrt-station-hotspot:focus
+  .mrt-hotspot-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+.seat-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+

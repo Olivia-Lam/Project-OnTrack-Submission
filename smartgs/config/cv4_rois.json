@@ -1,0 +1,38 @@
+{
+    "door_1_left": {
+        "x": 955,
+        "y": 150,
+        "width": 308,
+        "height": 498
+    },
+    "door_1_disembark": {
+        "x": 1269,
+        "y": 150,
+        "width": 243,
+        "height": 501
+    },
+    "door_1_right": {
+        "x": 1515,
+        "y": 154,
+        "width": 391,
+        "height": 498
+    },
+    "door_2_left": {
+        "x": 4,
+        "y": 121,
+        "width": 227,
+        "height": 524
+    },
+    "door_2_disembark": {
+        "x": 237,
+        "y": 126,
+        "width": 357,
+        "height": 519
+    },
+    "door_2_right": {
+        "x": 601,
+        "y": 127,
+        "width": 356,
+        "height": 525
+    }
+}

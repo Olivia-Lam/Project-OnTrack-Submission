@@ -1,0 +1,22 @@
+/* SGDS foundation — order matters: theme tokens -> GT palette -> foundation -> utilities.
+   Palette: GT purple (matches the Purple Line / NEL brand). Both tracks must use the same one. */
+@import "@govtechsg/sgds-web-component/themes/day.css";
+@import "@govtechsg/sgds-web-component/themes/night.css";
+@import "@govtechsg/sgds-web-component/themes/gt/purple.css";
+@import "@govtechsg/sgds-web-component/css/sgds.css";
+@import "@govtechsg/sgds-web-component/css/utility.css";
+
+@source not "../.agents";
+@source not "../.claude";
+
+:root {
+  --sgds-product-primary-100: var(--gt-color-100);
+  --sgds-product-primary-200: var(--gt-color-200);
+  --sgds-product-primary-300: var(--gt-color-300);
+  --sgds-product-primary-400: var(--gt-color-400);
+  --sgds-product-primary-500: var(--gt-color-500);
+  --sgds-product-primary-600: var(--gt-color-600);
+  --sgds-product-primary-700: var(--gt-color-700);
+  --sgds-product-primary-800: var(--gt-color-800);
+  --sgds-product-primary-900: var(--gt-color-900);
+}

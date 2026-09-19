@@ -1,0 +1,15 @@
+{
+  "name": "ontrack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OnTrack - a commuter companion for the North East Line, Circle Line and Sengkang-Punggol LRT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "npm --prefix app/backend ci && npm --prefix app/frontend ci",
+    "build": "npm --prefix app/frontend run build",
+    "start": "node app/backend/server.js",
+    "dev:backend": "npm --prefix app/backend run dev",
+    "dev:frontend": "npm --prefix app/frontend run dev",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

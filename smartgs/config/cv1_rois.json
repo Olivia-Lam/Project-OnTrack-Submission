@@ -1,0 +1,42 @@
+{
+    "door_1": {
+        "x": 63,
+        "y": 457,
+        "width": 192,
+        "height": 281
+    },
+    "door_2": {
+        "x": 573,
+        "y": 92,
+        "width": 14,
+        "height": 38
+    },
+    "door_1_interior": [
+        {
+            "x": 345,
+            "y": 237,
+            "width": 685,
+            "height": 530
+        }
+    ],
+    "door_2_interior": [
+        {
+            "x": 509,
+            "y": 185,
+            "width": 350,
+            "height": 83
+        },
+        {
+            "x": 558,
+            "y": 155,
+            "width": 259,
+            "height": 33
+        },
+        {
+            "x": 605,
+            "y": 69,
+            "width": 192,
+            "height": 82
+        }
+    ]
+}

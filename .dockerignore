@@ -1,0 +1,11 @@
+# Only the app goes into the image; keep secrets and bulky/generated files out of the build context.
+*
+!app
+!Dockerfile
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/.DS_Store

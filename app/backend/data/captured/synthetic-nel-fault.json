@@ -1,0 +1,30 @@
+{
+ "label": "SYNTHETIC test data - NOT a real incident: a made-up signalling fault on the North East Line",
+ "shape": "sgmrt",
+ "response": {
+  "value": [
+   {
+    "Status": "1",
+    "Line": "NEL",
+    "Message": [
+     {
+      "Content": "[SYNTHETIC TEST DATA] NEL: Due to a signalling fault, train service between Serangoon and Kovan is delayed. Free bus services are available between the affected stations.",
+      "CreatedDate": "2026-09-19T07:23:55Z"
+     }
+    ]
+   },
+   {
+    "Status": "0",
+    "Line": "CCL",
+    "Message": []
+   },
+   {
+    "Status": "0",
+    "Line": "SPLRT",
+    "Message": []
+   }
+  ],
+  "windowHours": 6,
+  "newestMessageAt": "2026-09-19T07:23:55Z"
+ }
+}
