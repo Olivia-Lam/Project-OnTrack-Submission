@@ -2,7 +2,7 @@
 
 OnTrack is a commuter companion for Singapore's North East Line (Purple Line), Circle Line and Sengkang-Punggol LRT, plus buses. Its aim is to move commuters from information to action: a chosen route, an exit, a door and a plan for when something breaks, instead of a list of arrival times.
 
-Live app: https://ontrack-1022580246088.asia-southeast1.run.app. Setup and run: [README.md](README.md).
+Live app: https://ontrack-1022580246088.asia-southeast1.run.app. Demo recording: https://www.youtube.com/watch?v=Oq2CU1IvZ8E. Setup and run: [README.md](README.md).
 
 ## 1. Persona: Arjun
 

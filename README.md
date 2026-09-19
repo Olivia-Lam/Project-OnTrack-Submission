@@ -3,7 +3,7 @@
 A commuter companion for Singapore's North East Line (Purple Line), Circle Line and Sengkang-Punggol LRT, plus buses. Plan a multi-modal trip on a real map, see the best exit and boarding door, find bicycle parking, and stay on track when a line is disrupted.
 
 - Live app (nothing to install): https://ontrack-1022580246088.asia-southeast1.run.app
-- Demo recording (phone-sized, one journey through a disruption): _link to be added_
+- Demo recording (phone-sized, one journey through a disruption): https://www.youtube.com/watch?v=Oq2CU1IvZ8E
 - Write-up: [WRITEUP.md](WRITEUP.md) covers the persona, architecture, assumptions, limitations, and how every number was arrived at
 
 The quickest way to evaluate is to open the live app on your phone. The steps below are for running your own copy.
