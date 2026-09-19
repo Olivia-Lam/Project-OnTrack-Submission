@@ -11,8 +11,9 @@ A commuter companion for Singapore's **North East Line (Purple Line), Circle Lin
 ## Try this first
 
 1. Open the app (live link above, or `http://localhost:4000` after the steps below) on a phone or a phone-sized browser window.
-2. Tap **Where to today?** → **From** `Damai LRT`, **To** `Bishan MRT` → **Plan journey**.
-   This is one trip across three lines (Punggol LRT → Purple Line → Circle Line). Tap the other route options at the bottom, drag the sheet up for the timeline, exit and boarding door.
+2. Tap **Where to today?** → **From**: type `Compassvale LRT` and pick **COMPASSVALE LRT STATION (SE1)** → **To**: type `Paya Lebar MRT` and pick **PAYA LEBAR MRT STATION (CC9)** → **Plan journey**.
+   This is one trip across three lines (Sengkang LRT → Purple Line → Circle Line). Tap the other route options in the bottom sheet, then drag the sheet up for the timeline, the best exit and the boarding door.
+   *Tip: pick the suggestion that has a station code in brackets. The address search lists those first.*
 3. Under **Details**, find **Simulate disruption** → **Lift Not Working** → tick the alternative exit, or **Unplanned Disruption** to see a bridging-bus reroute. (These buttons inject **simulated, clearly labelled** faults so a disruption can be shown on any day.)
 4. Turn on **Bicycle parking** (top of the map) and zoom in to see racks with counts and shelter.
 5. Open **Train** to browse every station on the three lines, and the **map sheet** on Home for crowd levels.
