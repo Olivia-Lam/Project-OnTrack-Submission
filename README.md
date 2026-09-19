@@ -58,7 +58,7 @@ Copy `.env.example` to `.env` (same folder) and fill in what you have. **Never c
 
 | Variable | Needed? | What it does | Where to get it |
 |---|---|---|---|
-| `ONEMAP_EMAIL`, `ONEMAP_PASSWORD` | **Required** for planning and address search | OneMap routing, walking, cycling, geocoding | Free: https://www.onemap.gov.sg/apidocs/register (username is your email address) |
+| `ONEMAP_EMAIL`, `ONEMAP_PASSWORD` | **Required** for journey planning | OneMap routing, walking and cycling (address search also uses it, for a higher rate limit) | Free: https://www.onemap.gov.sg/apidocs/register (username is your email address) |
 | `LTA_ACCOUNT_KEY` | Recommended | Live rail alerts, crowd colours on the map, bicycle racks with counts, bus stops | Free: https://datamall.lta.gov.sg → request API access (24 characters ending `==`, emailed on approval) |
 | `ALERTS_REPLAY` | Optional | Replay a captured or synthetic disruption (see below) | A file path, no registration |
 | `PORT`, `TZ`, `CORS_ORIGIN` | Optional | Port (default 4000); keep times in Singapore; cross-origin hosting only | — |
@@ -67,7 +67,7 @@ Copy `.env.example` to `.env` (same folder) and fill in what you have. **Never c
 
 **What happens without keys**
 
-- No OneMap credentials → journey planning and address search fail (the app says so). Everything else still loads. Use the live app to evaluate.
+- No OneMap credentials → journey planning fails with a message saying what to set (address search still works, at OneMap's lower anonymous rate limit). Everything else still loads. Use the live app to evaluate planning.
 - No LTA key → the app falls back to the public SGMRT announcements for line status and to OpenStreetMap for bicycle parking, and labels the source on screen. Crowd colours on the map stay grey.
 
 ## Showing a disruption when nothing is disrupted

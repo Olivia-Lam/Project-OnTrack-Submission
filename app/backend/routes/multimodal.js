@@ -3,6 +3,10 @@ import { routePublicTransport, routeCycle, routeWalk } from "../onemap.js";
 
 const router = express.Router();
 
+// A missing OneMap login is the one setup problem a first-time user can hit; say exactly what to do about it.
+const MISSING_ONEMAP = "Journey planning needs OneMap credentials. Set ONEMAP_EMAIL and ONEMAP_PASSWORD in .env (free: https://www.onemap.gov.sg/apidocs/register), or use the live app.";
+const isMissingOnemap = (err) => /ONEMAP_EMAIL/.test(err.message);
+
 // The rail services OnTrack covers, by OneMap route id (confirmed against live responses: leg.mode
 // "SUBWAY" with route "NE" = North East Line, "CC" = Circle Line; leg.mode "TRAM" with route
 // "SE"/"SW"/"PE"/"PW" = the Sengkang and Punggol LRT loops). Every other line (NS, EW, DT, TE, and the
@@ -181,6 +185,7 @@ router.get("/multimodal", async (req, res) => {
       return res.status(404).json({ error: "No public transport route found for that time - service may not be running." });
     }
     console.error("Error planning multimodal route:", err.message);
+    if (isMissingOnemap(err)) return res.status(503).json({ error: MISSING_ONEMAP });
     res.status(502).json({ error: "Failed to plan route", detail: err.message });
   }
 });
@@ -209,6 +214,7 @@ router.get("/cycle", async (req, res) => {
     });
   } catch (err) {
     console.error("Error planning cycle route:", err.message);
+    if (isMissingOnemap(err)) return res.status(503).json({ error: MISSING_ONEMAP });
     res.status(502).json({ error: "Failed to plan cycling route", detail: err.message });
   }
 });
@@ -235,6 +241,7 @@ router.get("/walk", async (req, res) => {
     });
   } catch (err) {
     console.error("Error planning walk route:", err.message);
+    if (isMissingOnemap(err)) return res.status(503).json({ error: MISSING_ONEMAP });
     res.status(502).json({ error: "Failed to plan walking route", detail: err.message });
   }
 });
